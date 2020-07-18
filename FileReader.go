@@ -45,6 +45,7 @@ func readFile(f string) (data []string) {
 	file, err := os.Open(f)
 	defer file.Close()
 	if err == nil {
+		fmt.Printf("Reading File %s", file.Name())
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			data = append(data, scanner.Text())
@@ -113,20 +114,26 @@ returns IQR of a given sensors Data.
 */
 func getMedian(list []float64) (med1, med3 float64) {
 	c := len(list)
-	if c%2 == 0 {
+	if c%2 == 0 && c >= 7 {
 		q1End := c/2 - 1
 		q3Start := c/2 + 1
 		slice := list[:q1End]
 		slicelen := len(slice)
-		if slicelen%2 == 0 {
+		if slicelen%2 == 0 && c != 0 {
+			fmt.Println(slicelen)
+			fmt.Println(c)
 			med1 = float64(slice[slicelen/2]+slice[slicelen/2-1]) / 2
 			slice = list[q3Start:]
 			med3 = float64(slice[slicelen/2]+slice[slicelen/2-1]) / 2
+		} else if c == 0 {
+			fmt.Println("ZERO")
 		} else {
 			med1 = slice[int(math.Ceil(float64(slicelen/2)))]
 			slice = list[q3Start:]
 			med3 = slice[int(math.Ceil(float64(slicelen/2)))]
 		}
+	} else if c < 7 {
+		fmt.Println("LESS THAN 7")
 	} else {
 		q1End := int(math.Floor(float64(c / 2)))
 		q3Start := int(math.Floor(float64(c/2)) + 1)
@@ -169,16 +176,37 @@ func outliers(q1 float64, q3 float64, medq float64, data []dataMap) {
 			outlier = append(outlier, v)
 		}
 	}
-	fmt.Println("outliers---------------------------------------------------------")
-	for _, v := range outlier {
-		fmt.Printf("date: %s, siteId:%f\n", v.date, v.siteId)
+	for _, _ = range outlier {
+		//fmt.Printf("date: %s, siteId:%f\n", v.date, v.siteId)
 		totalOutliers++
 	}
 
 }
 
 func main() {
-	file := []string{"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv"}
+	file := []string{
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2019.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2018.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2017.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2016.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2015.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2014.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2013.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2012.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2011.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2010.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2009.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2008.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2007.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2006.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2005.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2004.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2003.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2002.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2001.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2000.csv",
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_1999.csv"}
 	function := func(v2 string) {
 		fileLines := readFile(v2)
 		mappedSensors := separateData(fileLines)
@@ -186,9 +214,7 @@ func main() {
 			q1, q3, medq := IQR(v)
 			outliers(q1, q3, medq, v)
 		}
-
 	}
-
 	for _, v := range file {
 		fmt.Println("scanning")
 		function(v)
