@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+var totalOutliers int
+var outlierList []dataMap
+
 /**
 How data is grouped. May vary from year to year.
 */
@@ -36,8 +39,6 @@ type dataMap struct {
 	SITE_LONGITUDE               string
 }
 
-var totalOutliers int32 = 0
-
 /**
 Will return an array of the file per line.
 */
@@ -45,14 +46,14 @@ func readFile(f string) (data []string) {
 	file, err := os.Open(f)
 	defer file.Close()
 	if err == nil {
-		fmt.Printf("Reading File %s", file.Name())
+		//fmt.Printf("Reading File %s", file.Name())
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			data = append(data, scanner.Text())
 		}
 		//fmt.Println(strings.Join(data, "\n"))
 	} else {
-		fmt.Println(err)
+		//fmt.Println(err)
 	}
 	return
 }
@@ -76,9 +77,9 @@ func separateData(data []string) map[float64][]dataMap {
 		i4, err2 := strconv.ParseFloat(ar[4], 64)
 		i6, err3 := strconv.ParseFloat(ar[6], 64)
 		if err != nil || err2 != nil || err3 != nil {
-			fmt.Println(err)
-			fmt.Println(err2)
-			fmt.Println(err3)
+			//fmt.Println(err)
+			//fmt.Println(err2)
+			//fmt.Println(err3)
 		} else {
 			var a = dataMap{
 				ar[0],
@@ -120,8 +121,6 @@ func getMedian(list []float64) (med1, med3 float64) {
 		slice := list[:q1End]
 		slicelen := len(slice)
 		if slicelen%2 == 0 && c != 0 {
-			fmt.Println(slicelen)
-			fmt.Println(c)
 			med1 = float64(slice[slicelen/2]+slice[slicelen/2-1]) / 2
 			slice = list[q3Start:]
 			med3 = float64(slice[slicelen/2]+slice[slicelen/2-1]) / 2
@@ -133,7 +132,7 @@ func getMedian(list []float64) (med1, med3 float64) {
 			med3 = slice[int(math.Ceil(float64(slicelen/2)))]
 		}
 	} else if c < 7 {
-		fmt.Println("LESS THAN 7")
+		//fmt.Println("LESS THAN 7")
 	} else {
 		q1End := int(math.Floor(float64(c / 2)))
 		q3Start := int(math.Floor(float64(c/2)) + 1)
@@ -167,20 +166,18 @@ func IQR(data []dataMap) (med1, med3, medQ float64) {
 /**
 Find outliers of a sensor according to the IQR
 */
-func outliers(q1 float64, q3 float64, medq float64, data []dataMap) {
+func outliers(q1 float64, q3 float64, medq float64, data []dataMap, totOutlier *int) {
 	var outlier []dataMap
 	var upper float64 = q3 + 1.5*medq
 	var lesser float64 = q1 - 1.5*medq
 	for _, v := range data {
 		if v.Daily_Mean_PM_Concentrations > upper || v.Daily_Mean_PM_Concentrations < lesser {
-			outlier = append(outlier, v)
+			outlierList = append(outlierList, v)
 		}
 	}
 	for _, _ = range outlier {
-		//fmt.Printf("date: %s, siteId:%f\n", v.date, v.siteId)
-		totalOutliers++
+		*totOutlier++
 	}
-
 }
 
 func main() {
@@ -208,19 +205,36 @@ func main() {
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2000.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_1999.csv"}
 	function := func(v2 string) {
+		var totOutliers int = 0
 		fileLines := readFile(v2)
 		mappedSensors := separateData(fileLines)
+		var date string
+		for _, v := range mappedSensors {
+			d := strings.ReplaceAll(v[0].date, "\"", "")
+			s := strings.Split(d, "/")
+			date = s[2]
+			break
+		}
+		fmt.Println(date)
 		for _, v := range mappedSensors {
 			q1, q3, medq := IQR(v)
-			outliers(q1, q3, medq, v)
+			outliers(q1, q3, medq, v, &totOutliers)
 		}
+		fmt.Println(totOutliers)
+		totalOutliers += totOutliers
+		fmt.Printf("Total Outliers for %v: %v\n", date, totOutliers)
 	}
 	for _, v := range file {
-		fmt.Println("scanning")
 		function(v)
 	}
-
-	fmt.Printf("Total Outliers: %v", totalOutliers)
-	//med1, med3 := getMedian([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12,13,14,15})
-	//fmt.Println(med1, med3)
+	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers.txt")
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for _, v := range outlierList {
+			s := fmt.Sprintf("%v\n", v)
+			f.WriteString(s)
+		}
+		f.Close()
+	}
 }
