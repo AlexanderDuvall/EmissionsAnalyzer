@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-var totalOutliers int
 var outlierList []dataMap
+var siteLocation []string //latitude,longitude
 
 /**
 How data is grouped. May vary from year to year.
@@ -64,7 +64,7 @@ Will return a map of sensor values. The key is the siteId of the Sensor
 func separateData(data []string) map[float64][]dataMap {
 	var array = make(map[float64][]dataMap)
 	for i := 0; i < len(data); i++ {
-		ar := strings.Split(data[i], ",")
+		ar := strings.Split(data[i], "\",\"")
 		ar[2] = strings.TrimSpace(ar[2])
 		ar[2] = strings.ReplaceAll(ar[2], "\"", "")
 		ar[4] = strings.TrimSpace(ar[4])
@@ -180,7 +180,62 @@ func outliers(q1 float64, q3 float64, medq float64, data []dataMap, totOutlier *
 	}
 }
 
-func main() {
+/**
+sets Up initial locations (2020) to be compared
+*/
+func getLocations(data map[float64][]dataMap) {
+	for _, v1 := range data {
+		for _, v := range v1 {
+			var s string
+			s += strings.ReplaceAll(v.SITE_LATITUDE, "\"", "") + ","
+			s += strings.ReplaceAll(v.SITE_LONGITUDE, "\"", "")
+			if !findElement(siteLocation, s) { // element not found so appending
+				siteLocation = append(siteLocation, s)
+			}
+		}
+	}
+}
+func compareLocations(data map[float64][]dataMap) {
+	var date string
+	var uncommons []string
+	for _, v1 := range data {
+		if strings.Compare(date, "") == 0 {
+			date = strings.ReplaceAll(v1[0].date, "\"", "")
+		} //get date
+		for _, v := range v1 {
+			var s string
+			s += strings.ReplaceAll(v.SITE_LATITUDE, "\"", "") + ","
+			s += strings.ReplaceAll(v.SITE_LONGITUDE, "\"", "")
+			if !findElement(siteLocation, s) { // element not found so appending
+				uncommons = append(uncommons, s)
+			}
+		}
+	}
+	fmt.Printf("Found %v uncommon sites for %s\n", len(uncommons), strings.Split(date, "/")[2])
+}
+
+/**
+return False if no match, else true
+*/
+func findElement(array []string, element string) bool {
+	for _, v := range array {
+		if strings.Compare(v, element) != 0 { //dont match
+			return false
+		} else {
+			return true
+		}
+	}
+	return true
+}
+func checkConsistency(index int, data map[float64][]dataMap) {
+	if index == 0 {
+		getLocations(data)
+	} else {
+		compareLocations(data)
+	}
+}
+func setUpOutliers() {
+
 	file := []string{
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2019.csv",
@@ -204,37 +259,50 @@ func main() {
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2001.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2000.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_1999.csv"}
-	function := func(v2 string) {
+	function := func(v2 string) map[float64][]dataMap {
 		var totOutliers int = 0
 		fileLines := readFile(v2)
 		mappedSensors := separateData(fileLines)
-		var date string
-		for _, v := range mappedSensors {
-			d := strings.ReplaceAll(v[0].date, "\"", "")
-			s := strings.Split(d, "/")
-			date = s[2]
-			break
-		}
-		fmt.Println(date)
 		for _, v := range mappedSensors {
 			q1, q3, medq := IQR(v)
 			outliers(q1, q3, medq, v, &totOutliers)
 		}
-		fmt.Println(totOutliers)
-		totalOutliers += totOutliers
-		fmt.Printf("Total Outliers for %v: %v\n", date, totOutliers)
+		//fmt.Println(totOutliers)
+		//totalOutliers += totOutliers
+		//fmt.Printf("Total Outliers for %v: %v\n", date, totOutliers)
+		return mappedSensors
 	}
-	for _, v := range file {
-		function(v)
+	for i, v := range file {
+		var mappedSensors map[float64][]dataMap = function(v)
+		checkConsistency(i, mappedSensors)
 	}
+	writeOutliers()
+}
+func writeOutliers() {
 	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers.txt")
+	defer f.Close()
+	defer fmt.Println("Finished writing data")
 	if err != nil {
 		fmt.Println(err)
 	} else {
+		f.WriteString("Date, siteID, Daily_Mean_PM_Concentrations, Site_Latitude, Site_Longitude\n")
 		for _, v := range outlierList {
-			s := fmt.Sprintf("%v\n", v)
+			var s string = fmt.Sprintf("%v,%v,%v,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
 			f.WriteString(s)
 		}
-		f.Close()
 	}
+}
+
+/**
+Will overwrite data if called
+*/
+func outlierData() {
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers.txt")
+	outliers := mapData(s)
+	mappedData := separatebyYears(outliers)
+	commonDatesByYear(mappedData)
+}
+func main() {
+	//setUpOutliers()
+	outlierData()
 }
