@@ -239,6 +239,10 @@ func checkConsistency(index int, data map[float64][]dataMap) {
 		compareLocations(data)
 	}
 }
+
+/**
+Give a county to find. If just general information put "-1"
+*/
 func setUpOutliers(d string) {
 	file := []string{
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv",
@@ -297,7 +301,7 @@ func writeOutliers(ending string) {
 	} else {
 		f.WriteString("Date, siteID, Daily_Mean_PM_Concentrations, Site_Latitude, Site_Longitude\n")
 		for _, v := range outlierList {
-			var s string = fmt.Sprintf("%v,%v,%v,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
+			var s string = fmt.Sprintf("%v,%f,%fs,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
 			f.WriteString(s)
 		}
 	}
@@ -312,6 +316,28 @@ func outlierData(ending string) {
 	mappedData := separatebyYears(outliers)
 	commonDatesByYear(mappedData, ending)
 }
+func outliersBySensor(mappedData []Outlier, s string) {
+	sensorData := make(map[float64]int)
+	for _, v := range mappedData {
+		sensorData[v.siteID]++
+	}
+	fmt.Println("Number of Outliers each sensor has.")
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\OutliersBySensor" + s + ".csv")
+	file.WriteString("SiteID, Outlier Count\n")
+	defer file.Close()
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for k, v := range sensorData {
+			s := fmt.Sprintf("%f,%v\n", k, v)
+			fmt.Printf("%f,%v\n", k, v)
+			file.WriteString(s)
+		}
+	}
+}
 func main() {
-	setUpOutliers("-1")
+	//setUpOutliers("-1")
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + "Harris" + ".txt")
+	outliers := mapData(s)
+	outliersBySensor(outliers, "Harris")
 }

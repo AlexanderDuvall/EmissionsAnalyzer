@@ -142,6 +142,9 @@ func commonDates(data []string) Dates {
 	}
 	return recurringDates
 }
+func SensorOutliers() {
+
+}
 
 /*
 Warning... Will overwrite Graph Data if called
