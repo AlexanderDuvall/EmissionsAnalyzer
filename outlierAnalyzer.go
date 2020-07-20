@@ -76,7 +76,7 @@ func separatebyYears(mappedData []Outlier) (data map[string][]Outlier) {
 	return
 }
 
-func commonDatesByYear(data map[string][]Outlier) {
+func commonDatesByYear(data map[string][]Outlier, d string) {
 	var datemap = make(map[string]Dates)
 	for i := 1999; i <= 2020; i++ {
 		var array []string
@@ -88,7 +88,7 @@ func commonDatesByYear(data map[string][]Outlier) {
 		datemap[strconv.FormatInt(int64(i), 10)] = dates
 		fmt.Printf("%v:%v ---- %+v\n", i, dates.totalCount(), dates)
 	}
-	writeOutlierYears(datemap)
+	writeOutlierYears(datemap, d)
 
 }
 func commonDates(data []string) Dates {
@@ -146,8 +146,8 @@ func commonDates(data []string) Dates {
 /*
 Warning... Will overwrite Graph Data if called
 */
-func writeOutlierYears(dates map[string]Dates) {
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\OutliersYears.csv")
+func writeOutlierYears(dates map[string]Dates, d string) {
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\OutliersYears-" + d + ".csv")
 	defer file.Close()
 	if err == nil {
 		file.WriteString("Date, OutlierCount\n")

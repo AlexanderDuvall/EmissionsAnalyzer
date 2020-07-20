@@ -61,7 +61,7 @@ func readFile(f string) (data []string) {
 /*
 Will return a map of sensor values. The key is the siteId of the Sensor
 */
-func separateData(data []string) map[float64][]dataMap {
+func separateData(data []string, discriminator string) map[float64][]dataMap {
 	var array = make(map[float64][]dataMap)
 	for i := 0; i < len(data); i++ {
 		ar := strings.Split(data[i], "\",\"")
@@ -81,28 +81,30 @@ func separateData(data []string) map[float64][]dataMap {
 			//fmt.Println(err2)
 			//fmt.Println(err3)
 		} else {
-			var a = dataMap{
-				ar[0],
-				ar[1],
-				i2,
-				ar[3],
-				i4,
-				ar[5],
-				i6,
-				ar[7],
-				ar[8],
-				ar[9],
-				ar[10],
-				ar[11],
-				ar[12],
-				ar[13],
-				ar[14],
-				ar[15],
-				ar[16],
-				ar[17],
-				ar[18],
-				ar[19]}
-			array[a.siteId] = append(array[a.siteId], a)
+			if discriminator == "-1" || strings.ReplaceAll(ar[17], "\"", "") == discriminator {
+				var a = dataMap{
+					ar[0],
+					ar[1],
+					i2,
+					ar[3],
+					i4,
+					ar[5],
+					i6,
+					ar[7],
+					ar[8],
+					ar[9],
+					ar[10],
+					ar[11],
+					ar[12],
+					ar[13],
+					ar[14],
+					ar[15],
+					ar[16],
+					ar[17],
+					ar[18],
+					ar[19]}
+				array[a.siteId] = append(array[a.siteId], a)
+			}
 		}
 	}
 	//fmt.Println(array)
@@ -194,6 +196,9 @@ func getLocations(data map[float64][]dataMap) {
 			}
 		}
 	}
+	for _, v := range siteLocation {
+		fmt.Println(v)
+	}
 }
 func compareLocations(data map[float64][]dataMap) {
 	var date string
@@ -206,7 +211,7 @@ func compareLocations(data map[float64][]dataMap) {
 			var s string
 			s += strings.ReplaceAll(v.SITE_LATITUDE, "\"", "") + ","
 			s += strings.ReplaceAll(v.SITE_LONGITUDE, "\"", "")
-			if !findElement(siteLocation, s) { // element not found so appending
+			if !findElement(siteLocation, s) && !findElement(uncommons, s) { // element not found so appending
 				uncommons = append(uncommons, s)
 			}
 		}
@@ -218,24 +223,23 @@ func compareLocations(data map[float64][]dataMap) {
 return False if no match, else true
 */
 func findElement(array []string, element string) bool {
+	b := false
 	for _, v := range array {
-		if strings.Compare(v, element) != 0 { //dont match
-			return false
-		} else {
-			return true
+		if v == element { //dont match
+			b = true
 		}
 	}
-	return true
+	return b
 }
 func checkConsistency(index int, data map[float64][]dataMap) {
 	if index == 0 {
 		getLocations(data)
+
 	} else {
 		compareLocations(data)
 	}
 }
-func setUpOutliers() {
-
+func setUpOutliers(d string) {
 	file := []string{
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2019.csv",
@@ -262,7 +266,7 @@ func setUpOutliers() {
 	function := func(v2 string) map[float64][]dataMap {
 		var totOutliers int = 0
 		fileLines := readFile(v2)
-		mappedSensors := separateData(fileLines)
+		mappedSensors := separateData(fileLines, d)
 		for _, v := range mappedSensors {
 			q1, q3, medq := IQR(v)
 			outliers(q1, q3, medq, v, &totOutliers)
@@ -276,10 +280,16 @@ func setUpOutliers() {
 		var mappedSensors map[float64][]dataMap = function(v)
 		checkConsistency(i, mappedSensors)
 	}
-	writeOutliers()
+	if d == "-1" {
+		writeOutliers("")
+		outlierData("")
+	} else if d != "" {
+		writeOutliers(d)
+		outlierData(d)
+	}
 }
-func writeOutliers() {
-	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers.txt")
+func writeOutliers(ending string) {
+	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".txt")
 	defer f.Close()
 	defer fmt.Println("Finished writing data")
 	if err != nil {
@@ -296,13 +306,12 @@ func writeOutliers() {
 /**
 Will overwrite data if called
 */
-func outlierData() {
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers.txt")
+func outlierData(ending string) {
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".txt")
 	outliers := mapData(s)
 	mappedData := separatebyYears(outliers)
-	commonDatesByYear(mappedData)
+	commonDatesByYear(mappedData, ending)
 }
 func main() {
-	//setUpOutliers()
-	outlierData()
+	setUpOutliers("-1")
 }
