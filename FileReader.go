@@ -152,6 +152,10 @@ func getMedian(list []float64) (med1, med3 float64) {
 	}
 	return
 }
+
+/**
+Calculate IQR for a given data set. Returns Medians number to +- from
+*/
 func IQR(data []dataMap) (med1, med3, medQ float64) {
 	var DailyMeanPM []float64
 	for _, v := range data {
@@ -200,6 +204,10 @@ func getLocations(data map[float64][]dataMap) {
 		fmt.Println(v)
 	}
 }
+
+/**
+Checks for location consistency in dataSets over the years
+*/
 func compareLocations(data map[float64][]dataMap) {
 	var date string
 	var uncommons []string
@@ -231,6 +239,10 @@ func findElement(array []string, element string) bool {
 	}
 	return b
 }
+
+/**
+Gets first year's site data and compares it to the rest. Base vs others
+*/
 func checkConsistency(index int, data map[float64][]dataMap) {
 	if index == 0 {
 		getLocations(data)
@@ -245,28 +257,28 @@ Give a county to find. If just general information put "-1"
 */
 func setUpOutliers(d string) {
 	file := []string{
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2019.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2018.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2017.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2016.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2015.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2014.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2013.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2012.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2011.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2010.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2009.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2008.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2007.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2006.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2005.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2004.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2003.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2002.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2001.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2000.csv",
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_1999.csv"}
+		//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2020.csv"
+		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2019.csv"}
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2018.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2017.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2016.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2015.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2014.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2013.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2012.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2011.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2010.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2009.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2008.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2007.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2006.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2005.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2004.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2003.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2002.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2001.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_2000.csv",
+	//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\pm2.5_1999.csv"}
 	function := func(v2 string) map[float64][]dataMap {
 		var totOutliers int = 0
 		fileLines := readFile(v2)
@@ -292,16 +304,24 @@ func setUpOutliers(d string) {
 		outlierData(d)
 	}
 }
+
+/**
+Writes Outliers to a file. Can be based off a county
+-1 if general info
+*/
 func writeOutliers(ending string) {
-	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".txt")
+	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".csv")
 	defer f.Close()
+
 	defer fmt.Println("Finished writing data")
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		f.WriteString("Date, siteID, Daily_Mean_PM_Concentrations, Site_Latitude, Site_Longitude\n")
+		f.WriteString("Date,siteID,Daily_Mean_PM_Concentrations,Site_Latitude,Site_Longitude\n")
 		for _, v := range outlierList {
-			var s string = fmt.Sprintf("%v,%f,%fs,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
+			var s = fmt.Sprintf("%v,%v,%v,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
+			s = strings.ReplaceAll(s, "\"", "")
+			fmt.Println(s)
 			f.WriteString(s)
 		}
 	}
@@ -311,11 +331,15 @@ func writeOutliers(ending string) {
 Will overwrite data if called
 */
 func outlierData(ending string) {
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".txt")
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + ending + ".csv")
 	outliers := mapData(s)
 	mappedData := separatebyYears(outliers)
 	commonDatesByYear(mappedData, ending)
 }
+
+/**
+Counts Outliers by sensor and writes it to a file
+*/
 func outliersBySensor(mappedData []Outlier, s string) {
 	sensorData := make(map[float64]int)
 	for _, v := range mappedData {
@@ -335,9 +359,16 @@ func outliersBySensor(mappedData []Outlier, s string) {
 		}
 	}
 }
-func main() {
-	//setUpOutliers("-1")
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + "Harris" + ".txt")
+
+/**
+Function to get outliers by sensor
+*/
+func OutliersBySensorFile(d string) {
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\PM2.5\\Outliers" + d + ".csv")
 	outliers := mapData(s)
 	outliersBySensor(outliers, "Harris")
+}
+func main() {
+	//setUpOutliers("Harris")
+	//OutliersBySensorFile("Harris")
 }

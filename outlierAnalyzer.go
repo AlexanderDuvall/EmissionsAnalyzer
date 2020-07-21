@@ -17,8 +17,8 @@ type Outlier struct {
 }
 type Dates struct {
 	Jan uint16
-	Mar uint16
 	Feb uint16
+	Mar uint16
 	Apr uint16
 	May uint16
 	Jun uint16
@@ -39,6 +39,9 @@ func (d Dates) common() {
 	fmt.Printf("%+v", d)
 
 }
+
+/** reads outlier file and returns each line as a string
+ */
 func readOutliers(f string) []string {
 	file, err := os.Open(f)
 	defer file.Close()
@@ -53,6 +56,10 @@ func readOutliers(f string) []string {
 	}
 	return data
 }
+
+/**
+Organizes the Outlier Data
+*/
 func mapData(data []string) (mappedData []Outlier) {
 	for i, v := range data {
 		if i != 0 {
@@ -67,6 +74,10 @@ func mapData(data []string) (mappedData []Outlier) {
 
 	return
 }
+
+/**
+Separates the Outliers by years in a map
+*/
 func separatebyYears(mappedData []Outlier) (data map[string][]Outlier) {
 	data = make(map[string][]Outlier)
 	for _, v := range mappedData {
@@ -76,6 +87,9 @@ func separatebyYears(mappedData []Outlier) (data map[string][]Outlier) {
 	return
 }
 
+/**
+Counts Number of Outliers by yearand writes them to a file
+*/
 func commonDatesByYear(data map[string][]Outlier, d string) {
 	var datemap = make(map[string]Dates)
 	for i := 1999; i <= 2020; i++ {
@@ -91,6 +105,10 @@ func commonDatesByYear(data map[string][]Outlier, d string) {
 	writeOutlierYears(datemap, d)
 
 }
+
+/**
+returns outlier count by Month for a given year.
+*/
 func commonDates(data []string) Dates {
 	var recurringDates = Dates{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
@@ -102,48 +120,45 @@ func commonDates(data []string) Dates {
 	for _, v := range dates {
 		num, _ := strconv.ParseFloat(strings.Split(v, "/")[0], 64)
 		switch num {
-		case 0:
+		case 1:
 			recurringDates.Jan++
 			break
-		case 1:
+		case 2:
 			recurringDates.Feb++
 			break
-		case 2:
+		case 3:
 			recurringDates.Mar++
 			break
-		case 3:
+		case 4:
 			recurringDates.Apr++
 			break
-		case 4:
+		case 5:
 			recurringDates.May++
 			break
-		case 5:
+		case 6:
 			recurringDates.Jun++
 			break
-		case 6:
+		case 7:
 			recurringDates.Jul++
 			break
-		case 7:
+		case 8:
 			recurringDates.Aug++
 			break
-		case 8:
+		case 9:
 			recurringDates.Sep++
 			break
-		case 9:
+		case 10:
 			recurringDates.Oct++
 			break
-		case 10:
+		case 11:
 			recurringDates.Nov++
 			break
-		case 11:
+		case 12:
 			recurringDates.Dec++
 			break
 		}
 	}
 	return recurringDates
-}
-func SensorOutliers() {
-
 }
 
 /*
@@ -155,7 +170,7 @@ func writeOutlierYears(dates map[string]Dates, d string) {
 	if err == nil {
 		file.WriteString("Date, OutlierCount\n")
 		for k, v := range dates {
-			file.WriteString(fmt.Sprintf("%v,%v\n", k, strconv.FormatInt(int64(v.totalCount()), 10)))
+			file.WriteString(fmt.Sprintf("%v, %v\n", k, strconv.FormatInt(int64(v.totalCount()), 10)))
 		}
 		fmt.Println("fin writing csv")
 	} else {
