@@ -164,7 +164,7 @@ func commonDates(data []string) Dates {
 Warning... Will overwrite Graph Data if called
 */
 func writeOutlierYears(dates map[string]Dates, d string) {
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "OutliersYears-" + d + ".csv")
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersYears-" + d + ".csv")
 	defer file.Close()
 	if err == nil {
 		file.WriteString("Date, OutlierCount\n")
@@ -181,7 +181,7 @@ func writeOutlierYears(dates map[string]Dates, d string) {
 Will overwrite data if called
 */
 func outlierData(ending string) {
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "Outliers" + ending + ".csv")
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
 	outliers := mapData(s)
 	mappedData := separatebyYears(outliers)
 	commonDatesByYear(mappedData, ending)
@@ -196,7 +196,7 @@ func outliersBySensor(mappedData []Outlier, s string) {
 		sensorData[v.siteID]++
 	}
 	fmt.Println("Number of Outliers each sensor has.")
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "OutliersBySensor" + s + ".csv")
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersBySensor" + s + ".csv")
 	file.WriteString("SiteID, Outlier Count\n")
 	defer file.Close()
 	if err != nil {
@@ -216,7 +216,7 @@ func OutliersBySensorDetailed(mappedData []Outlier, s string) {
 		sensorData[a]++
 	}
 	fmt.Println("Number of Outliers each sensor has by Year.")
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "OutliersBySensorDetailed" + s + ".csv")
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersBySensorDetailed" + s + ".csv")
 	defer file.Close()
 	file.WriteString("Date-SiteId, Outlier Count\n")
 	if err != nil {
@@ -235,7 +235,10 @@ isDetailed == true will give date+siteid and create separate file
 false will give just Site Id
 */
 func OutliersBySensorFile(d string, isDetailed bool) {
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "Outliers" + d + ".csv")
+	if d == "-1" {
+		d = ""
+	}
+	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "Outliers" + d + ".csv")
 	outliers := mapData(s)
 	if isDetailed {
 		OutliersBySensorDetailed(outliers, "General")

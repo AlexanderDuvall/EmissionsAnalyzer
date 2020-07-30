@@ -286,8 +286,6 @@ func setUpOutliers(d string) {
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2001.csv",
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2000.csv",
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_1999.csv"}
-	file = []string{
-		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\CA_" + pollutant + ".csv"}
 	function := func(v2 string) map[float64][]dataMap {
 		var totOutliers int = 0
 		fileLines := readFile(v2)
@@ -296,7 +294,7 @@ func setUpOutliers(d string) {
 			q1, q3, medq := IQR(v)
 			outliers(q1, q3, medq, v, &totOutliers)
 		}
-		//fmt.Println(totOutliers)
+		fmt.Println(totOutliers)
 		//totalOutliers += totOutliers
 		//fmt.Printf("Total Outliers for %v: %v\n", date, totOutliers)
 		return mappedSensors
@@ -319,7 +317,7 @@ Writes Outliers to a file. Can be based off a county
 -1 if general info
 */
 func writeOutliers(ending string) {
-	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\California_2019\\" + pollutant + "Outliers" + ending + ".csv")
+	f, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
 	defer f.Close()
 
 	defer fmt.Println("Finished writing data")
@@ -340,9 +338,9 @@ func main() {
 	pollutants := []string{"PM2.5", "SO2", "NO2", "CO"}
 	for _, v := range pollutants {
 		pollutant = v
-		setUpOutliers("-1")
-		//OutliersBySensorFile("-1", true)
-		//OutliersBySensorFile("-1", false)
+		setUpOutliers("Harris")
+		OutliersBySensorFile("Harris", true)
+		OutliersBySensorFile("Harris", false)
 	}
 
 }
