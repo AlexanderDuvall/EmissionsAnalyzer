@@ -185,6 +185,7 @@ func outlierData(ending string) {
 	outliers := mapData(s)
 	mappedData := separatebyYears(outliers)
 	commonDatesByYear(mappedData, ending)
+	OutlierCountBySensor(outliers)
 }
 
 /**
@@ -244,5 +245,24 @@ func OutliersBySensorFile(d string, isDetailed bool) {
 		OutliersBySensorDetailed(outliers, "General")
 	} else {
 		outliersBySensor(outliers, "General")
+	}
+}
+func OutlierCountBySensor(dataMap []Outlier) {
+	counter := make(map[float64]int)
+	mapped := make(map[float64]Outlier)
+	for _, v := range dataMap {
+		mapped[v.siteID] = v
+		counter[v.siteID]++
+	}
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + "Top_Five_Outliers" + pollutant + ".csv")
+	defer file.Close()
+	if err == nil {
+		file.WriteString("SiteID, Count, Latitude, Longitude\n")
+		for k, v := range mapped {
+			s := fmt.Sprintf("%f,%v,%v,%v\n", k, counter[v.siteID], v.Site_Longitude, v.Site_Longitude)
+			file.WriteString(s)
+		}
+	} else {
+		fmt.Println(err)
 	}
 }

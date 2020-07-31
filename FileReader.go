@@ -342,5 +342,4 @@ func main() {
 		OutliersBySensorFile("Harris", true)
 		OutliersBySensorFile("Harris", false)
 	}
-
 }
