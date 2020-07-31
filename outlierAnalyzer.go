@@ -210,6 +210,10 @@ func outliersBySensor(mappedData []Outlier, s string) {
 		}
 	}
 }
+
+/**
+Writes Outliers by sensors according to "Year-SiteID" and Count
+*/
 func OutliersBySensorDetailed(mappedData []Outlier, s string) {
 	sensorData := make(map[string]int)
 	for _, v := range mappedData {
@@ -247,6 +251,11 @@ func OutliersBySensorFile(d string, isDetailed bool) {
 		outliersBySensor(outliers, "General")
 	}
 }
+
+/**
+Counts outliers by sensor and writes it to a file -> Top_Five_Outliers(Pollutant)
+Gives SiteID, Count, Latitude,Longitude
+*/
 func OutlierCountBySensor(dataMap []Outlier) {
 	counter := make(map[float64]int)
 	mapped := make(map[float64]Outlier)

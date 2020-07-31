@@ -108,7 +108,6 @@ func separateData(data []string, discriminator string) map[float64][]dataMap {
 			}
 		}
 	}
-	//fmt.Println(array)
 
 	return array
 }
@@ -203,9 +202,11 @@ func getLocations(data map[float64][]dataMap) {
 			}
 		}
 	}
+
 	for _, v := range siteLocation {
 		fmt.Println(v)
 	}
+	fmt.Println("JETSTREAM")
 }
 
 /**
@@ -243,26 +244,31 @@ func findElement(array []string, element string) bool {
 	return b
 }
 
-/**
+/***
 Gets first year's site data and compares it to the rest. Base vs others
 */
 func checkConsistency(index int, data map[float64][]dataMap) {
 	if index == 0 {
 		getLocations(data)
-
 	} else {
 		compareLocations(data)
 	}
 }
-
-func getTotalPerYear(map[float64][]dataMap) {
-
+func mapSensors(file, disc string) map[float64][]dataMap {
+	var totOutliers = 0
+	fileLines := readFile(file)
+	mappedSensors := separateData(fileLines, disc)
+	for _, v := range mappedSensors {
+		q1, q3, medq := IQR(v)
+		outliers(q1, q3, medq, v, &totOutliers)
+	}
+	return mappedSensors
 }
 
 /**
 Give a county to find. If just general information put "-1"
 */
-func setUpOutliers(d string) {
+func setUpOutliers(d string, write bool) {
 	file := []string{
 		//"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2020.csv",
 		"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2019.csv"}
@@ -286,30 +292,24 @@ func setUpOutliers(d string) {
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2001.csv",
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_2000.csv",
 	//	"C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "_1999.csv"}
-	function := func(v2 string) map[float64][]dataMap {
-		var totOutliers int = 0
-		fileLines := readFile(v2)
-		mappedSensors := separateData(fileLines, d)
-		for _, v := range mappedSensors {
-			q1, q3, medq := IQR(v)
-			outliers(q1, q3, medq, v, &totOutliers)
-		}
-		fmt.Println(totOutliers)
-		//totalOutliers += totOutliers
-		//fmt.Printf("Total Outliers for %v: %v\n", date, totOutliers)
-		return mappedSensors
-	}
 	for i, v := range file {
-		var mappedSensors map[float64][]dataMap = function(v)
+		var mappedSensors map[float64][]dataMap = mapSensors(v, d)
 		checkConsistency(i, mappedSensors)
+		fmt.Println(i)
+		year := strings.Split(v, "_")[1]
+		checkDates(mappedSensors, year)
 	}
-	if d == "-1" {
-		writeOutliers("")
-		outlierData("")
-	} else if d != "" {
-		writeOutliers(d)
-		outlierData(d)
+
+	if write {
+		if d == "-1" {
+			writeOutliers("")
+			outlierData("")
+		} else if d != "" {
+			writeOutliers(d)
+			outlierData(d)
+		}
 	}
+
 }
 
 /**
@@ -334,12 +334,51 @@ func writeOutliers(ending string) {
 	}
 }
 
+/**
+checks the reliability of sensors by writing to "(Pollutant) Complete"/ Pollutant_Year the information of
+how many days were charted over the year for each sensor in a given file year.
+*/
+func checkDates(data map[float64][]dataMap, year string) {
+	if _, err := os.Stat("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "complete"); os.IsNotExist(err) {
+		os.Mkdir("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\"+pollutant+"\\"+pollutant+"Complete", os.ModeDir)
+	}
+	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "complete" + "\\" + pollutant + "_" + year)
+	file.WriteString("SiteID, Charted Days, % of 365, Latitude, Longitude \n")
+	if err == nil {
+		for k, v := range data {
+			mapDate := make(map[string]dataMap)
+			var lat, lon string
+			for _, v2 := range v {
+				date := strings.ReplaceAll(v2.date, " ", "")
+				date = strings.ReplaceAll(date, "\"", "")
+				mapDate[date] = v2
+				lat = strings.ReplaceAll(v2.SITE_LATITUDE, "\"", "")
+				lat = strings.ReplaceAll(lat, " ", "")
+				lon = strings.ReplaceAll(v2.SITE_LONGITUDE, "\"", "")
+				lon = strings.ReplaceAll(lon, " ", "")
+			}
+			var completeDays = float64(len(mapDate))
+			var total float64 = 365
+			s := fmt.Sprintf("%v,%v,%v,%v,%v\n", int64(k), int(completeDays), strconv.FormatFloat(completeDays/total*100, 'f', 3, 64), lat, lon)
+			fmt.Println(s)
+			file.WriteString(s)
+		}
+
+	} else {
+		fmt.Println(err)
+	}
+
+}
 func main() {
 	pollutants := []string{"PM2.5", "SO2", "NO2", "CO"}
+	output := false
 	for _, v := range pollutants {
 		pollutant = v
-		setUpOutliers("Harris")
-		OutliersBySensorFile("Harris", true)
-		OutliersBySensorFile("Harris", false)
+		fmt.Println(pollutant)
+		setUpOutliers("Harris", output)
+		if output {
+			OutliersBySensorFile("Harris", true)
+			OutliersBySensorFile("Harris", false)
+		}
 	}
 }
