@@ -164,7 +164,7 @@ func commonDates(data []string) Dates {
 Warning... Will overwrite Graph Data if called
 */
 func writeOutlierYears(dates map[string]Dates, d string) {
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersYears-" + d + ".csv")
+	file, err := os.Create(Directory + pollutant + "\\" + pollutant + "OutliersYears-" + d + ".csv")
 	defer file.Close()
 	if err == nil {
 		file.WriteString("Date, OutlierCount\n")
@@ -181,7 +181,7 @@ func writeOutlierYears(dates map[string]Dates, d string) {
 Will overwrite data if called
 */
 func outlierData(ending string) {
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
+	s := readOutliers(Directory + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
 	outliers := mapData(s)
 	mappedData := separatebyYears(outliers)
 	commonDatesByYear(mappedData, ending)
@@ -190,6 +190,7 @@ func outlierData(ending string) {
 
 /**
 Counts Outliers by sensor and writes it to a file
+SiteID, OutlierCount
 */
 func outliersBySensor(mappedData []Outlier, s string) {
 	sensorData := make(map[float64]int)
@@ -197,7 +198,7 @@ func outliersBySensor(mappedData []Outlier, s string) {
 		sensorData[v.siteID]++
 	}
 	fmt.Println("Number of Outliers each sensor has.")
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersBySensor" + s + ".csv")
+	file, err := os.Create(Directory + pollutant + "\\" + pollutant + "OutliersBySensor" + s + ".csv")
 	file.WriteString("SiteID, Outlier Count\n")
 	defer file.Close()
 	if err != nil {
@@ -221,7 +222,7 @@ func OutliersBySensorDetailed(mappedData []Outlier, s string) {
 		sensorData[a]++
 	}
 	fmt.Println("Number of Outliers each sensor has by Year.")
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "OutliersBySensorDetailed" + s + ".csv")
+	file, err := os.Create(Directory + pollutant + "\\" + pollutant + "OutliersBySensorDetailed" + s + ".csv")
 	defer file.Close()
 	file.WriteString("Date-SiteId, Outlier Count\n")
 	if err != nil {
@@ -243,7 +244,7 @@ func OutliersBySensorFile(d string, isDetailed bool) {
 	if d == "-1" {
 		d = ""
 	}
-	s := readOutliers("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + pollutant + "Outliers" + d + ".csv")
+	s := readOutliers(Directory + pollutant + "\\" + pollutant + "Outliers" + d + ".csv")
 	outliers := mapData(s)
 	if isDetailed {
 		OutliersBySensorDetailed(outliers, "General")
@@ -263,7 +264,7 @@ func OutlierCountBySensor(dataMap []Outlier) {
 		mapped[v.siteID] = v
 		counter[v.siteID]++
 	}
-	file, err := os.Create("C:\\Users\\Alex\\Documents\\Summer 2020 Work\\" + pollutant + "\\" + "Top_Five_Outliers" + pollutant + ".csv")
+	file, err := os.Create(Directory + pollutant + "\\" + "Top_Five_Outliers" + pollutant + ".csv")
 	defer file.Close()
 	if err == nil {
 		file.WriteString("SiteID, Count, Latitude, Longitude\n")
