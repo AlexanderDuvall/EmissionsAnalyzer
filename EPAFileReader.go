@@ -14,11 +14,8 @@ var outlierList []dataMap
 var siteLocation []string //latitude,longitude
 var pollutant string
 
-const Directory string = "C:\\Users\\Alex\\Documents\\Summer 2020 Work\\"
+const EPADirectory string = "C:\\Users\\Alex\\Documents\\Summer 2020 Work\\"
 
-/**
-How data is grouped. May vary from year to year.
-*/
 type dataMap struct {
 	date                         string
 	source                       string
@@ -41,6 +38,10 @@ type dataMap struct {
 	SITE_LATITUDE                string
 	SITE_LONGITUDE               string
 }
+
+/**
+How data is grouped. May vary from year to year.
+*/
 
 /**
 Will return an array of the file per line.
@@ -272,28 +273,28 @@ Give a county to find. If just general information put "-1"
 */
 func setUpOutliers(d string, write bool) {
 	file := []string{
-		Directory + pollutant + "\\" + pollutant + "_2020.csv",
-		Directory + pollutant + "\\" + pollutant + "_2019.csv",
-		Directory + pollutant + "\\" + pollutant + "_2018.csv",
-		Directory + pollutant + "\\" + pollutant + "_2017.csv",
-		Directory + pollutant + "\\" + pollutant + "_2016.csv",
-		Directory + pollutant + "\\" + pollutant + "_2015.csv",
-		Directory + pollutant + "\\" + pollutant + "_2014.csv",
-		Directory + pollutant + "\\" + pollutant + "_2013.csv",
-		Directory + pollutant + "\\" + pollutant + "_2012.csv",
-		Directory + pollutant + "\\" + pollutant + "_2011.csv",
-		Directory + pollutant + "\\" + pollutant + "_2010.csv",
-		Directory + pollutant + "\\" + pollutant + "_2009.csv",
-		Directory + pollutant + "\\" + pollutant + "_2008.csv",
-		Directory + pollutant + "\\" + pollutant + "_2007.csv",
-		Directory + pollutant + "\\" + pollutant + "_2006.csv",
-		Directory + pollutant + "\\" + pollutant + "_2005.csv",
-		Directory + pollutant + "\\" + pollutant + "_2004.csv",
-		Directory + pollutant + "\\" + pollutant + "_2003.csv",
-		Directory + pollutant + "\\" + pollutant + "_2002.csv",
-		Directory + pollutant + "\\" + pollutant + "_2001.csv",
-		Directory + pollutant + "\\" + pollutant + "_2000.csv",
-		Directory + pollutant + "\\" + pollutant + "_1999.csv"}
+		EPADirectory + pollutant + "\\" + pollutant + "_2020.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2019.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2018.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2017.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2016.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2015.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2014.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2013.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2012.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2011.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2010.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2009.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2008.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2007.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2006.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2005.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2004.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2003.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2002.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2001.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_2000.csv",
+		EPADirectory + pollutant + "\\" + pollutant + "_1999.csv"}
 	for i, v := range file {
 		var mappedSensors map[float64][]dataMap = mapSensors(v, d)
 		checkConsistency(i, mappedSensors)
@@ -319,7 +320,7 @@ Writes Outliers to a file. Can be based off a county
 -1 if general info
 */
 func writeOutliers(ending string) {
-	f, err := os.Create(Directory + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
+	f, err := os.Create(EPADirectory + pollutant + "\\" + pollutant + "Outliers" + ending + ".csv")
 	defer f.Close()
 
 	defer fmt.Println("Finished writing data")
@@ -341,10 +342,10 @@ checks the reliability of sensors by writing to "(Pollutant) Complete"/ Pollutan
 how many days were charted over the year for each sensor in a given file year.
 */
 func checkDates(data map[float64][]dataMap, year string) {
-	if _, err := os.Stat(Directory + pollutant + "\\" + pollutant + "complete"); os.IsNotExist(err) {
-		os.Mkdir(Directory+pollutant+"\\"+pollutant+"Complete", os.ModeDir)
+	if _, err := os.Stat(EPADirectory + pollutant + "\\" + pollutant + "complete"); os.IsNotExist(err) {
+		os.Mkdir(EPADirectory+pollutant+"\\"+pollutant+"Complete", os.ModeDir)
 	}
-	file, err := os.Create(Directory + pollutant + "\\" + pollutant + "complete" + "\\" + pollutant + "_" + year)
+	file, err := os.Create(EPADirectory + pollutant + "\\" + pollutant + "complete" + "\\" + pollutant + "_" + year)
 	file.WriteString("SiteID, Charted Days, % of 365, Latitude, Longitude \n")
 	if err == nil {
 		for k, v := range data {
@@ -372,16 +373,17 @@ func checkDates(data map[float64][]dataMap, year string) {
 
 }
 func main() {
-	pollutants := []string{"PM2.5", "SO2", "NO2", "CO"}
-	output := true
+	//pollutants := []string{"PM2.5", "SO2", "NO2", "CO"}
+	//output := true
 
-	for _, v := range pollutants {
-		pollutant = v
-		fmt.Println(pollutant)
-		setUpOutliers("Harris", output)
-		if output {
-			OutliersBySensorFile("Harris", true)
-			OutliersBySensorFile("-1", true)
-		}
-	}
+	//for _, v := range pollutants {
+	//	pollutant = v
+	//	fmt.Println(pollutant)
+	//	setUpOutliers("Harris", output)
+	//	if output {
+	//		OutliersBySensorFile("Harris", true)
+	//		OutliersBySensorFile("-1", true)
+	// }
+	//}
+	start()
 }
