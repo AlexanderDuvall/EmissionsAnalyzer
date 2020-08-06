@@ -327,9 +327,9 @@ func writeOutliers(ending string) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		f.WriteString("Date,siteID,Daily_Mean_PM_Concentrations,Site_Latitude,Site_Longitude\n")
+		f.WriteString("Date,siteID,Daily_Mean_PM_Concentrations,Site_Latitude,Site_Longitude,County\n")
 		for _, v := range outlierList {
-			var s = fmt.Sprintf("%v,%v,%v,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE)
+			var s = fmt.Sprintf("%v,%v,%v,%v,%v,%v\n", v.date, v.siteId, v.Daily_Mean_PM_Concentrations, v.SITE_LATITUDE, v.SITE_LONGITUDE, v.COUNTY)
 			s = strings.ReplaceAll(s, "\"", "")
 			//fmt.Println(s)
 			f.WriteString(s)
@@ -375,7 +375,6 @@ func checkDates(data map[float64][]dataMap, year string) {
 func main() {
 	//pollutants := []string{"PM2.5", "SO2", "NO2", "CO"}
 	//output := true
-
 	//for _, v := range pollutants {
 	//	pollutant = v
 	//	fmt.Println(pollutant)
@@ -383,7 +382,8 @@ func main() {
 	//	if output {
 	//		OutliersBySensorFile("Harris", true)
 	//		OutliersBySensorFile("-1", true)
-	// }
+	//	}
 	//}
-	start()
+	TCEQConsistencyList()
+
 }
