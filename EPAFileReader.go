@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"sort"
@@ -55,9 +56,8 @@ func readFile(f string) (data []string) {
 		for scanner.Scan() {
 			data = append(data, scanner.Text())
 		}
-		//fmt.Println(strings.Join(data, "\n"))
 	} else {
-		//fmt.Println(err)
+		log.Fatal(err.Error())
 	}
 	return
 }
@@ -199,7 +199,8 @@ func getLocations(data map[float64][]dataMap) {
 			s += strings.ReplaceAll(v.SITE_LATITUDE, "\"", "") + ","
 			s += strings.ReplaceAll(v.SITE_LONGITUDE, "\"", "") + ","
 			s += strings.ReplaceAll(strconv.FormatFloat(v.siteId, 'f', -1, 64), "\"", "") + ","
-			s += strings.ReplaceAll(v.AQS_PARAMETER_DESC, "\"", "")
+			s += strings.ReplaceAll(v.AQS_PARAMETER_DESC, "\"", "") + ","
+			s += strings.ReplaceAll(v.Site_Name, "\"", "") + ";"
 			if !findElement(siteLocation, s) { // element not found so appending
 				siteLocation = append(siteLocation, s)
 			}
@@ -273,7 +274,7 @@ Give a county to find. If just general information put "-1"
 */
 func setUpOutliers(d string, write bool) {
 	file := []string{
-		EPADirectory + pollutant + "\\" + pollutant + "_2020.csv",
+		//	EPADirectory + pollutant + "\\" + pollutant + "_2020.csv",
 		EPADirectory + pollutant + "\\" + pollutant + "_2019.csv",
 		EPADirectory + pollutant + "\\" + pollutant + "_2018.csv",
 		EPADirectory + pollutant + "\\" + pollutant + "_2017.csv",
@@ -384,6 +385,7 @@ func main() {
 	//		OutliersBySensorFile("-1", true)
 	//	}
 	//}
+	organizeSemiColon()
 	TCEQConsistencyList()
-
+	CycleThroughCompleteFiles()
 }
