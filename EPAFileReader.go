@@ -175,8 +175,8 @@ func IQR(data []dataMap) (med1, med3, medQ float64) {
 /**
 Find outliers of a sensor according to the IQR
 */
-func outliers(q1 float64, q3 float64, medq float64, data []dataMap, totOutlier *int) {
-	var outlier []dataMap
+func outliers(q1 float64, q3 float64, medq float64, data []dataMap) (outlierList []dataMap) {
+	outlierList = []dataMap{}
 	var upper float64 = q3 + 1.5*medq
 	var lesser float64 = q1 - 1.5*medq
 	for _, v := range data {
@@ -184,9 +184,7 @@ func outliers(q1 float64, q3 float64, medq float64, data []dataMap, totOutlier *
 			outlierList = append(outlierList, v)
 		}
 	}
-	for _, _ = range outlier {
-		*totOutlier++
-	}
+	return
 }
 
 /**
@@ -259,12 +257,11 @@ func checkConsistency(index int, data map[float64][]dataMap) {
 	}
 }
 func mapSensors(file, disc string) map[float64][]dataMap {
-	var totOutliers = 0
 	fileLines := readFile(file)
 	mappedSensors := separateData(fileLines, disc)
 	for _, v := range mappedSensors {
 		q1, q3, medq := IQR(v)
-		outliers(q1, q3, medq, v, &totOutliers)
+		outlierList = outliers(q1, q3, medq, v)
 	}
 	return mappedSensors
 }

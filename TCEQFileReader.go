@@ -488,3 +488,43 @@ func CycleThroughCompleteFiles() {
 		log.Fatal(err.Error())
 	}
 }
+func TCEQOutliers(ogPath, pollutant, path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	scanner := bufio.NewScanner(file)
+	counter := 0
+	data := make([]dataMap, 0)
+	for scanner.Scan() {
+		counter++
+		if counter == 1 {
+			continue
+		}
+		s := scanner.Text()
+		arr := strings.Split(s, ",")
+		v, _ := strconv.ParseFloat(arr[1], 64)
+		data = append(data, dataMap{
+			date:                         arr[0],
+			Daily_Mean_PM_Concentrations: v,
+		})
+
+	}
+	file.Close()
+	q1, q3, medq := IQR(data)
+	outliers := outliers(q1, q3, medq, data)
+	newDir := filepath.Join(ogPath, "Outliers")
+	if _, err := os.Stat(newDir); os.IsNotExist(err) {
+		os.Mkdir(newDir, os.ModeDir)
+	}
+
+	file2, err2 := os.Create(filepath.Join(newDir, pollutant+".csv"))
+	defer file2.Close()
+	if err2 != nil {
+		log.Fatal(err.Error())
+	}
+	file2.WriteString("Date, Value\n")
+	for _, v := range outliers {
+		file2.WriteString(fmt.Sprintf("%v,%v\n", v.date, v.Daily_Mean_PM_Concentrations))
+	}
+}
